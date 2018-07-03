@@ -42,6 +42,7 @@
 
    <authentication-manager alias="authenticationManager">
      <authentication-provider>
+     <password-encoder hash="sha-256"/>
       <!-- SQLでユーザ情報取得 -->
       <jdbc-user-service
         data-source-ref="dataSource"

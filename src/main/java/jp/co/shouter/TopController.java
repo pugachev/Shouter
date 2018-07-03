@@ -1,5 +1,7 @@
 package jp.co.shouter;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -17,6 +19,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -44,6 +48,7 @@ public class TopController {
 	@Autowired
 	private PlatformTransactionManager txMgr;
 
+	//新投稿書き込み用フォーム(画面→サーバー)
     @ModelAttribute
     public ShoutForm setUpShoutForm()
     {
@@ -51,6 +56,7 @@ public class TopController {
         return form;
     }
 
+    //登録用フォーム(画面→サーバー)
     @ModelAttribute
     public RegiForm setUpRegiForm()
     {
@@ -64,10 +70,36 @@ public class TopController {
 		return "login";
 	}
 
+	private static String sha256(String original) throws NoSuchAlgorithmException
+	{
+        byte[] cipher_byte;
+        try
+        {
+                MessageDigest md = MessageDigest.getInstance("SHA-256");
+                md.update(original.getBytes());
+                cipher_byte = md.digest();
+                StringBuilder sb = new StringBuilder(2 * cipher_byte.length);
+                for(byte b: cipher_byte)
+                {
+                        sb.append(String.format("%02x", b&0xff) );
+                }
+                return sb.toString();
+        }
+        catch (Exception e)
+        {
+                e.printStackTrace();
+        }
+        return "";
+	}
+
+	//新規登録
 	@RequestMapping(value = "/register", method = { RequestMethod.POST,RequestMethod.GET})
-	public String register(@Validated @ModelAttribute RegiForm form, BindingResult result, HttpSession session,Model model,RedirectAttributes redirectAttrs)
+	public String register(@Validated @ModelAttribute RegiForm form, BindingResult result, HttpSession session,Model model,RedirectAttributes redirectAttrs) throws NoSuchAlgorithmException
 	{
 		String rcvPassword = (String)form.getPassword();
+		String encodedPassword =  TopController.sha256(rcvPassword);
+		System.out.println("rcvPassword="+rcvPassword+" encodedPassword="+encodedPassword);
+
 		String rcvUserName = (String)form.getUsername();
 		String rcvSex = (String)form.getSex();
 		String rcvProfile = (String)form.getProfile();
@@ -86,7 +118,8 @@ public class TopController {
     	TransactionStatus tSts = txMgr.getTransaction(dtDef);
 		try
 		{
-			jdbcTemplate.update("INSERT INTO users (loginId,password,userName,icon,profile,authority) VALUES (?, ?,?,?,?,?)",rcvUserName, rcvPassword,rcvUserName,iconUser,rcvProfile,"ROLE_ADMIN");
+//			jdbcTemplate.update("INSERT INTO users (loginId,password,userName,icon,profile,authority) VALUES (?, ?,?,?,?,?)",rcvUserName, rcvPassword,rcvUserName,iconUser,rcvProfile,"ROLE_ADMIN");
+			jdbcTemplate.update("INSERT INTO users (loginId,password,userName,icon,profile,authority) VALUES (?, ?,?,?,?,?)",rcvUserName, encodedPassword,rcvUserName,iconUser,rcvProfile,"ROLE_ADMIN");
 			txMgr.commit(tSts);
 		}
 		catch(Exception ex)
@@ -98,6 +131,7 @@ public class TopController {
 		return "login";
 	}
 
+	//トップ(一覧)画面
 	@RequestMapping(value = "/top",method = { RequestMethod.POST,RequestMethod.GET})
 	public String top(Locale locale, Model model,RedirectAttributes redirectAttributes,RedirectAttributes redirectAttrs)
 	{
@@ -105,14 +139,14 @@ public class TopController {
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
 		String username="";
-		String tmp="";
+//		String tmp="";
 		String profile="";
 		String icon="";
 		Collection<? extends GrantedAuthority> prinipals= ((UserDetails)principal).getAuthorities();
 		if (principal instanceof UserDetails)
 		{
 		  username = ((UserDetails)principal).getUsername();
-		  tmp = ((UserDetails)principal).getAuthorities().toString();
+//		  tmp = ((UserDetails)principal).getAuthorities().toString();
 		}
 		else
 		{
@@ -159,6 +193,7 @@ public class TopController {
 		return "regi";
 	}
 
+	//新投稿書き込み画面
 	@RequestMapping(value = "/writing", method = RequestMethod.POST)
 	public String writing(@Validated @ModelAttribute ShoutForm form, BindingResult result, HttpSession session,Model model,RedirectAttributes redirectAttrs)
 	{
@@ -168,14 +203,14 @@ public class TopController {
 		Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
 		String username="";
-		String tmp="";
-		String profile="";
+//		String tmp="";
+//		String profile="";
 		String icon="";
 		Collection<? extends GrantedAuthority> prinipals= ((UserDetails)principal).getAuthorities();
 		if (principal instanceof UserDetails)
 		{
 		  username = ((UserDetails)principal).getUsername();
-		  tmp = ((UserDetails)principal).getAuthorities().toString();
+//		  tmp = ((UserDetails)principal).getAuthorities().toString();
 		}
 		else
 		{
@@ -186,7 +221,7 @@ public class TopController {
 		String usersSQL = "select * from users where userName = '" + username+ "'";
 		List<Map<String, Object>> retUsers = jdbcTemplate.queryForList(usersSQL);
 
-		profile = retUsers.get(0).get("profile").toString();
+//		profile = retUsers.get(0).get("profile").toString();
 		icon = retUsers.get(0).get("icon").toString();
 		Calendar calender = Calendar.getInstance();
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
