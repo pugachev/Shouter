@@ -107,11 +107,13 @@ public class TopController {
 		String iconUser="";
 		if(rcvSex.equals("male"))
 		{
-			iconUser = "icon-user";
+//			iconUser = "icon-user";
+			iconUser = "/Shouter/resources/img/male.png";
 		}
 		else
 		{
-			iconUser = "icon-user-female";
+//			iconUser = "icon-user-female";
+			iconUser = "/Shouter/resources/img/female.png";
 		}
 
     	DefaultTransactionDefinition dtDef = new DefaultTransactionDefinition();
@@ -159,6 +161,7 @@ public class TopController {
 
 		profile = retUsers.get(0).get("profile").toString();
 		icon = retUsers.get(0).get("icon").toString();
+//		icon = "/Shouter/resources/img/female.png";
 		model.addAttribute("userName", username);
 		model.addAttribute("profile", profile);
 		model.addAttribute("icon", icon);

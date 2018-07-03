@@ -33,8 +33,9 @@
 			<form action="${pageContext.request.contextPath}/logout" method="post">
 				<table class="table table-bordered">
 					<tr>
-						<td rowspan="2" class="text-center"><span
-							class="${icon} pe-3x pe-va"></span></td>
+						<%-- <td rowspan="2" class="text-center"><span class="${icon} pe-3x pe-va"></span></td> --%>
+						<%-- <td rowspan="2" class="text-center"><span><img class="manImg" src="${pageContext.request.contextPath}/resources/img/female.png"></img></span></td> --%>
+						<td rowspan="2" class="text-center"><span><img class="manImg" src="${icon}"></img></span></td>
 						<td width="256">${userName}</td>
 						<td><input class="btn btn-light" type="submit" value="ログアウト" /></td>
 					</tr>
@@ -79,8 +80,8 @@
 			<c:forEach var="shout" items="${mList}" >
 				<table class="table table-striped table-bordered">
 					<tr>
-						<td rowspan="2" class="text-center"><span
-							class="${shout.icon} pe-3x pe-va"></span></td>
+						<%-- <td rowspan="2" class="text-center"><span class="${shout.icon} pe-3x pe-va"></span></td> --%>
+						<td rowspan="2" class="text-center"><span><img class="manImg" src="${shout.icon}"></img></span></td>
 						<td>${shout.userName}</td>
 					</tr>
 					<tr>
